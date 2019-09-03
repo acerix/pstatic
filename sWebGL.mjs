@@ -34,23 +34,11 @@ export class sWebGL {
       preserveDrawingBuffer: true
     })
 
-    // Uniforms
-    this.scale_location = null
-    this.tranform_location = null
-    this.speed_location = null
-    this.resolution_location = null
-    this.color_params_location = null
-
     // Handle viewport resize
     window.onresize = function() {
       self.canvas.width = window.innerWidth
       self.canvas.height = window.innerHeight
-      self.canvas.centre = [
-        Math.floor(self.canvas.width/2),
-        Math.floor(self.canvas.height/2)
-      ]
       self.gl.viewport(0, 0, self.canvas.width, self.canvas.height)
-      self.gl.uniform1f(self.resolution_location, self.smallestScreenEdge())
       self.gl.clear(self.gl.COLOR_BUFFER_BIT)
     }
 
@@ -119,8 +107,8 @@ export class sWebGL {
     // Default speed
     gl.uniform1f(this.speed_location, 0.05)
 
-    // Time
-    this.time_location = gl.getUniformLocation(shader_program, 'u_time')
+    // Entropy
+    this.random = gl.getUniformLocation(shader_program, 'u_random')
 
     // Colour Params
     this.color_params_location = gl.getUniformLocation(shader_program, 'u_color_params')
@@ -178,11 +166,6 @@ export class sWebGL {
       throw new Error(gl.getShaderInfoLog(shader))
     }
     return shader
-  }
-
-  // Return the height of the screen or width if smaller
-  smallestScreenEdge() {
-    return Math.min(this.canvas.height, this.canvas.width)
   }
 
 }

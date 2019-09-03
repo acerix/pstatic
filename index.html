@@ -3,9 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>sWebGL</title>
-<link rel="stylesheet" href="style.css">
+<title>pstatic</title>
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
+<style>
+body {
+  margin: 0;
+  background-color: #777;
+  overflow: hidden;
+}
+</style>
 </head>
 <body>
 
@@ -23,378 +29,29 @@ void main(void) {
 
 precision lowp float;
 
-uniform float u_resolution;
-uniform float u_scale;
-uniform float u_speed;
-uniform vec2 u_transform;
-uniform vec3 u_color_params;
-uniform float u_time;
+uniform float u_random;
 
 void main() {
-
-  // Normalize coordinates
-  float x = ( gl_FragCoord.x / u_resolution - u_transform.x ) * u_scale;
-  float y = ( gl_FragCoord.y / u_resolution - u_transform.y ) * u_scale;
-
-  // Let z be the squared-distance from the origin, drawing a circle
-  float z = x * x + y * y;
-
-  // Set pixel colours from periodic functions on z
-  gl_FragColor.r = sin(z * u_color_params.r - u_time * u_speed) / 2.0 + 0.5;
-  gl_FragColor.g = sin(z * u_color_params.g - u_time * u_speed) / 2.0 + 0.5;
-  gl_FragColor.b = sin(z * u_color_params.b - u_time * u_speed) / 2.0 + 0.5;
-
+  gl_FragColor.r = gl_FragCoord.y / 512.0 + 200.0;
+  gl_FragColor.g = gl_FragCoord.y / 1024.0;
+  gl_FragColor.b = 0.0;
 }
 
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/gl-matrix@3.0.0/gl-matrix-min.js"></script>
 
 <script type="module">
 'set strict'
 
 import {sWebGL} from './sWebGL.mjs'
-import {sParams} from './sParams.mjs'
-import {sPanel} from './sPanel.mjs'
-import {sMouse} from './sMouse.mjs'
-import {sKeys} from './sKeys.mjs'
-import {sTweak} from './sTweak.mjs'
-
-import {DemoActor} from './DemoActor.mjs'
-//import {DemoPlugin} from './DemoPlugin.mjs'
 
 window.onload = function() {
 
-  // Keep track of where the mouse was while dragging
-  let mouse_left_drag_last_position = [0, 0]
-
-  // Keep track of when each button is pressed to know which button was pressed first
-  let mouse_left_last_click = 0
-  let mouse_right_last_click = 0
-
-  // Increment the zoom level (scale)
-  let incrementZoom = function(increment, towards) {
-    param_handler.params.z *= ( 1 + increment / 16 )
-    updateScaleLocation()
-    param_handler.update()
-  }
-
-  // Move position (translate)
-  let movePosition = function(x, y) {
-    param_handler.params.x = (x + +param_handler.params.x).toFixed(5)
-    param_handler.params.y = (y + +param_handler.params.y).toFixed(5)
-    updateTransformLocation()
-    param_handler.update()
-  }
-
-  // Keep track of tweak number
-  let tweak_counter = 0
-
-  // Init Web GL
-  let swgl = new sWebGL({
-    plugins: {
-
-      //'demo': new DemoPlugin({ message: 'Hello sWorld!' }),
-
-      'mouse': new sMouse({
-        onDown: {
-
-          // left-click
-          0: function() {
-            mouse_left_last_click = +new Date()
-
-            // Record position for dragging
-            mouse_left_drag_last_position = swgl.plugins.mouse.p.slice(0)
-          },
-
-          // right-click
-          2: function() {
-            mouse_right_last_click = +new Date()
-          },
-
-        },
-        whileDown: {
-
-          // left-click
-          0: function() {
-            // ignore when right-click is also pressed
-            if (swgl.plugins.mouse.b[2] !== 0) {
-              return
-            }
-            // Move by dragging
-            // @todo fix this calculation so the display is fixed to the mouse position while dragging
-            let z = param_handler.params.z
-            let mouse_delta = [
-              mouse_left_drag_last_position[0] - swgl.plugins.mouse.p[0],
-              mouse_left_drag_last_position[1] - swgl.plugins.mouse.p[1]
-            ]
-            mouse_left_drag_last_position[0] = swgl.plugins.mouse.p[0]
-            mouse_left_drag_last_position[1] = swgl.plugins.mouse.p[1]
-            if (mouse_delta[0] || mouse_delta[1]) {
-              let delta_factor = 1 / swgl.smallestScreenEdge()
-              movePosition(
-                -mouse_delta[0] * delta_factor,
-                mouse_delta[1] * delta_factor
-              )
-            }
-          },
-
-          // right-click
-          2: function() {
-            // ignore when left-click is also pressed
-            if (swgl.plugins.mouse.b[0] !== 0) {
-              return
-            }
-            // move towards drag position
-            movePosition(
-              (swgl.canvas.centre[0] - swgl.plugins.mouse.p[0]) / 4096,
-              -(swgl.canvas.centre[1] - swgl.plugins.mouse.p[1]) / 4096
-            )
-          },
-
-        },
-        onWheel: function(i) {
-          incrementZoom(i, swgl.plugins.mouse.p)
-        },
-
-      }),
-
-      'keys': new sKeys({
-        onDown: {
-
-          // esc: Reset
-          27: function() {
-            param_handler.params.x = param_handler.params.y = 0
-            param_handler.params.z = 0.1
-            param_handler.update()
-          },
-
-          // ←: Left
-          37: function() {
-            movePosition(-1,  0)
-          },
-          // ↑: Up
-          38: function() {
-            movePosition( 0,  1)
-          },
-          // →: Right
-          39: function() {
-            movePosition( 1,  0)
-          },
-          // ↓: Down
-          40: function() {
-            movePosition( 0, -1)
-          },
-
-          // +: Zoom in
-          107: function() {
-            incrementZoom(-1)
-          },
-          // -: Zoom out
-          109: function() {
-            incrementZoom(1)
-          },
-
-        }
-      }),
-      /*
-      'tweak': new sTweak({
-        periodic: [
-          {
-            every: 1,
-            call: function() {
-              //console.log(tweak_counter++)
-            }
-          },
-          {
-            every: 10,
-            call: function() {
-              console.log('tweak zoom')
-              incrementZoom(-1)
-            }
-          },
-          {
-            every: 30,
-            call: function() {
-              console.log('tweak position')
-              movePosition(0.5 - Math.random(),  0.5 - Math.random())
-            }
-          }
-        ]
-      })
-      */
-
-    }
-  })
-
-  // Callback functions when params are changed
-  let updateTransformLocation = function() {
-    swgl.gl.uniform2f(
-      swgl.transform_location,
-      +param_handler.params.x + swgl.canvas.centre[0] / swgl.smallestScreenEdge(),
-      +param_handler.params.y + swgl.canvas.centre[1] / swgl.smallestScreenEdge()
-    )
-  }
-  let updateScaleLocation = function(v) {
-    swgl.gl.uniform1f(swgl.scale_location, param_handler.params.z)
-  }
-
-  // Draw something as a demo
-  let actor = new DemoActor()
-  swgl.gl.uniform3f(swgl.color_params_location, actor.colour_frequencies[0], actor.colour_frequencies[1], actor.colour_frequencies[2])
-
-  // Get params from URL hash and update URL when they change
-  let param_handler = new sParams({
-    onChange: {
-      'x': updateTransformLocation,
-      'y': updateTransformLocation,
-      'z': updateScaleLocation
-    }
-  })
-
-  // Default params
-  param_handler.params = {
-
-      // Scroll position
-      x: 0,
-      y: 0,
-
-      // Zoom
-      z: 5,
-
-      // Colour frequencies
-      c_0: 0.1, // Red
-      c_1: 0.1, // Green
-      c_2: 0.1, // Blue
-
-  }
-
-  // Set actor params defaults and onChange callbacks
-
-  // Speed param
-  let param_name = ['s',0].join('_')
-  param_handler.params[param_name] = actor.speed[0]
-  param_handler.onChange[param_name] = function(v) {
-    actor.speed[0] = v
-    swgl.gl.uniform1f(swgl.speed_location, actor.speed[0])
-    // @todo update setting in panel
-  }
-
-  // Colour frequency params (R,G,B)
-  for (let i=0;i<3;i++) {
-    let param_name = ['c',i].join('_')
-    param_handler.params[param_name] = actor.colour_frequencies[0]
-    param_handler.onChange[param_name] = function(v) {
-      swgl.color_params_location[param_name] = param_handler.params[param_name]
-      actor.colour_frequencies[i] = v
-      swgl.gl.uniform3f(swgl.color_params_location, actor.colour_frequencies[0], actor.colour_frequencies[1], actor.colour_frequencies[2])
-    }
-    // @todo update setting in panel
-  }
-
-
-  // Set actor params
-
-  // Parse supplied params
-  param_handler.parse(false)
-
-  // Update params in URL hash
-  param_handler.update()
-
-  // Set sWebGL params
-  updateTransformLocation()
-  updateScaleLocation()
-
-  // Set actor params from URL hash
-  for (let param_name in param_handler.params) {
-    let indexes = param_name.split('_')
-    switch (indexes[0]) {
-
-      // Speed
-      case 's':
-        actor.speed[indexes[1]] = param_handler.params[param_name]
-        break;
-
-      // Colour frequencies
-      case 'c':
-        actor.colour_frequencies[indexes[1]] = param_handler.params[param_name]
-        break;
-
-    }
-    //param_handler.params[param_name] = param_handler.params[param_name]
-  }
-
-  // Set initial webgl params
-  swgl.gl.uniform1f(swgl.speed_location, actor.speed[0])
-  swgl.gl.uniform3f(swgl.color_params_location, actor.colour_frequencies[0], actor.colour_frequencies[1], actor.colour_frequencies[2])
-
-  // Point in time counter (eg. frame number)
-  let pot = 0
-
-  let color_offsets = glMatrix.vec3.create()
-  glMatrix.vec3.random(color_offsets)
-  let color_frequencies = glMatrix.vec3.create()
-  glMatrix.vec3.random(color_frequencies, 0.05)
+  let swgl = new sWebGL()
 
   swgl.drawScene = function() {
-
-    pot++
-
-    swgl.gl.uniform1f(swgl.time_location, pot)
-
-    if (typeof swgl.plugins === 'object') {
-      for (let i in swgl.plugins) if (swgl.plugins[i].hasOwnProperty('whileDown')) {
-        for (let j in swgl.plugins[i].whileDown) {
-          if (swgl.plugins[i].b[j]) {
-            swgl.plugins[i].whileDown[j]()
-          }
-        }
-      }
-    }
-
-    // Draw actors
+    swgl.gl.uniform1f(swgl.random_location, Math.random())
     swgl.gl.drawArrays(swgl.gl.TRIANGLE_STRIP, 0, 4)
-
-    // Reset initial position
-    //actor.reset()
-
-    // Iterate
-    //actor.iterate()
   }
-
-  // Draw the actor control panel
-  let panel = new sPanel()
-
-  panel.drawSliders(
-    actor.speed,
-    's',
-    {
-      min: -2,
-      max: 2,
-      onChange: function(name) {
-        let indexes = name.split('_')
-        param_handler.params[name] = actor.speed[indexes[1]].toFixed(3)
-        swgl.speed_location[indexes[1]] = param_handler.params[name]
-        swgl.gl.uniform1f(swgl.speed_location, actor.speed[0])
-        param_handler.update()
-      },
-    }
-  )
-  panel.drawSliders(
-    actor.colour_frequencies,
-    'c',
-    {
-      min: -100,
-      max: 100,
-      onChange: function(name) {
-        let indexes = ['', +name.substring(name.lastIndexOf('_') + 1)]
-        param_handler.params[name] = actor.colour_frequencies[indexes[1]].toFixed(3)
-        swgl.color_params_location[indexes[1]] = param_handler.params[name]
-        swgl.gl.uniform3f(swgl.color_params_location, actor.colour_frequencies[0], actor.colour_frequencies[1], actor.colour_frequencies[2])
-        param_handler.update()
-      },
-    }
-  )
 
 }
 

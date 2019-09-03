@@ -1,5 +1,5 @@
-# webgl-template
-Template for a basic fullscreen WebGL app with inline fragment and vertex shaders.
+# pstatic
+WebGL replication of analogue television noise.
 
 ## Demo
-https://acerix.github.io/webgl-template/
+https://acerix.github.io/pstatic/
