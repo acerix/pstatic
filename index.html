@@ -6,11 +6,13 @@
 <title>pstatic</title>
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <style>
+
 body {
   margin: 0;
   background-color: #777;
   overflow: hidden;
 }
+
 </style>
 </head>
 <body>
@@ -30,14 +32,14 @@ void main(void) {
 precision lowp float;
 uniform float u_random;
 
+float rand(vec2 co) {
+    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
 void main() {
-
-  float seed = u_random * (gl_FragCoord.x + 65536.0 * gl_FragCoord.y);
-
-  gl_FragColor.r = mod(seed, 256.0);
-  gl_FragColor.g = mod(seed / 256.0, 256.0);
-  gl_FragColor.b = mod(seed / 65536.0, 256.0);
-
+  gl_FragColor.r = rand(vec2(gl_FragCoord.x + u_random, gl_FragCoord.y + u_random));
+  gl_FragColor.g = rand(vec2(gl_FragCoord.x, gl_FragCoord.y + u_random));
+  gl_FragColor.b = rand(vec2(gl_FragCoord.x + u_random, gl_FragCoord.y));
 }
 
 </script>
