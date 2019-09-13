@@ -51,7 +51,7 @@ import {sWebGL} from './sWebGL.mjs'
 
 window.onload = function() {
 
-  let swgl = new sWebGL()
+  const swgl = new sWebGL()
 
   swgl.drawScene = function() {
     swgl.gl.uniform1f(swgl.random_location, Math.random())

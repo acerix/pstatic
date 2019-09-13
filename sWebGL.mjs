@@ -8,7 +8,7 @@ export class sWebGL {
 
   constructor(options) {
 
-    let self = this
+    const self = this
 
     if (typeof options ==='undefined') options = {}
 
@@ -62,7 +62,7 @@ export class sWebGL {
 
   // Begin or restart rendering
   init() {
-    let gl = this.gl
+    const gl = this.gl
     //gl.clearColor(0.0, 0.0, 0.0, 1.0)
     //gl.clearDepth(1.0)
     //gl.enable(gl.DEPTH_TEST)
@@ -72,9 +72,9 @@ export class sWebGL {
 
   // Load shaders
   initShaders() {
-    let gl = this.gl
+    const gl = this.gl
 
-    let shader_program = gl.createProgram()
+    const shader_program = gl.createProgram()
 
     // Attach shaders
     for (let i in SHADER_ELEMENT_IDS) {
@@ -90,13 +90,13 @@ export class sWebGL {
     gl.useProgram(shader_program)
 
     // Position of vertex data
-    let position_location = gl.getAttribLocation(shader_program, 'a_position')
+    const position_location = gl.getAttribLocation(shader_program, 'a_position')
 
     // Entropy feeder
     this.random_location = gl.getUniformLocation(shader_program, 'u_random')
 
     // Position vertices
-    let vertices = new Float32Array([
+    const vertices = new Float32Array([
        1,  1,  0,
       -1,  1,  0,
        1, -1,  0,
@@ -104,7 +104,7 @@ export class sWebGL {
     ])
 
     // Bind position buffer
-    let vertex_buffer = gl.createBuffer()
+    const vertex_buffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer)
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
     gl.vertexAttribPointer(position_location, 3, gl.FLOAT, false, 0, 0)
@@ -117,7 +117,7 @@ export class sWebGL {
   life(self) {
 
     // Pass sWebGL instance in the callback
-    let callback = function() {
+    const callback = function() {
       self.life(self)
     }
 
@@ -133,12 +133,12 @@ export class sWebGL {
 
   // Load shader from <script>
   getShader(id) {
-    let gl = this.gl
-    let scriptElement = document.getElementById(id)
+    const gl = this.gl
+    const scriptElement = document.getElementById(id)
     if (scriptElement === null) {
       throw new Error('Shader script element "' + id + '" not found')
     }
-    let shader = gl.createShader(gl[scriptElement.type.replace('text/x-','').replace('-','_').toUpperCase()])
+    const shader = gl.createShader(gl[scriptElement.type.replace('text/x-','').replace('-','_').toUpperCase()])
     gl.shaderSource(shader, scriptElement.textContent)
     gl.compileShader(shader)
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
