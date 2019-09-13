@@ -28,13 +28,16 @@ void main(void) {
 <script id="fragment-shader" type="text/x-fragment-shader">
 
 precision lowp float;
-
 uniform float u_random;
 
 void main() {
-  gl_FragColor.r = gl_FragCoord.y / 512.0 + 200.0;
-  gl_FragColor.g = gl_FragCoord.y / 1024.0;
-  gl_FragColor.b = 0.0;
+
+  float seed = u_random * (gl_FragCoord.x + 65536.0 * gl_FragCoord.y);
+
+  gl_FragColor.r = mod(seed, 256.0);
+  gl_FragColor.g = mod(seed / 256.0, 256.0);
+  gl_FragColor.b = mod(seed / 65536.0, 256.0);
+
 }
 
 </script>

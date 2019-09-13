@@ -92,29 +92,8 @@ export class sWebGL {
     // Position of vertex data
     let position_location = gl.getAttribLocation(shader_program, 'a_position')
 
-    // Screen resolution
-    this.resolution_location = gl.getUniformLocation(shader_program, 'u_resolution')
-
-    // Scale
-    this.scale_location = gl.getUniformLocation(shader_program, 'u_scale')
-
-    // Position
-    this.transform_location = gl.getUniformLocation(shader_program, 'u_transform')
-
-    // Speed
-    this.speed_location = gl.getUniformLocation(shader_program, 'u_speed')
-
-    // Default speed
-    gl.uniform1f(this.speed_location, 0.05)
-
-    // Entropy
-    this.random = gl.getUniformLocation(shader_program, 'u_random')
-
-    // Colour Params
-    this.color_params_location = gl.getUniformLocation(shader_program, 'u_color_params')
-
-    // Default to something non-zero
-    gl.uniform3f(this.color_params_location, 1, 1, 1)
+    // Entropy feeder
+    this.random_location = gl.getUniformLocation(shader_program, 'u_random')
 
     // Position vertices
     let vertices = new Float32Array([
