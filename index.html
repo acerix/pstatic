@@ -47,14 +47,17 @@ void main() {
 <script type="module">
 'set strict'
 
+import {sAudio} from './sAudio.mjs'
 import {sWebGL} from './sWebGL.mjs'
 
 window.onload = function() {
 
+  const audio = new sAudio()
   const swgl = new sWebGL()
+  const random_location = swgl.gl.getUniformLocation(swgl.shader_program, 'u_random')
 
   swgl.drawScene = function() {
-    swgl.gl.uniform1f(swgl.random_location, Math.random())
+    swgl.gl.uniform1f(random_location, Math.random())
     swgl.gl.drawArrays(swgl.gl.TRIANGLE_STRIP, 0, 4)
   }
 

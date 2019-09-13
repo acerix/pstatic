@@ -7,7 +7,6 @@ export const SHADER_ELEMENT_IDS = ['vertex-shader', 'fragment-shader']
 export class sWebGL {
 
   constructor(options) {
-
     const self = this
 
     if (typeof options ==='undefined') options = {}
@@ -74,26 +73,23 @@ export class sWebGL {
   initShaders() {
     const gl = this.gl
 
-    const shader_program = gl.createProgram()
+    this.shader_program = gl.createProgram()
 
     // Attach shaders
     for (let i in SHADER_ELEMENT_IDS) {
-      gl.attachShader(shader_program, this.getShader(SHADER_ELEMENT_IDS[i]))
+      gl.attachShader(this.shader_program, this.getShader(SHADER_ELEMENT_IDS[i]))
     }
 
-    gl.linkProgram(shader_program)
+    gl.linkProgram(this.shader_program)
 
-    if (!gl.getProgramParameter(shader_program, gl.LINK_STATUS)) {
-      throw new Error(gl.getProgramInfoLog(shader_program))
+    if (!gl.getProgramParameter(this.shader_program, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(this.shader_program))
     }
 
-    gl.useProgram(shader_program)
+    gl.useProgram(this.shader_program)
 
     // Position of vertex data
-    const position_location = gl.getAttribLocation(shader_program, 'a_position')
-
-    // Entropy feeder
-    this.random_location = gl.getUniformLocation(shader_program, 'u_random')
+    const position_location = gl.getAttribLocation(this.shader_program, 'a_position')
 
     // Position vertices
     const vertices = new Float32Array([
